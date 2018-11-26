@@ -1,6 +1,6 @@
 # Pulling user information:
 
-All of the above assumes that `Python3.6` and `pip3.6` have been installed and can be called with `python3.6` and `pip3.6`. 
+All of the below assumes that `Python3.6` and `pip3.6` have been installed and can be called with `python3.6` and `pip3.6`. 
 
 #### 1. create config.py file with the following contents:
 
@@ -21,11 +21,11 @@ pip3.6 install twitter
 
 #### 4. copy the following files to your current directory and make them executable with `chmod +777 filename`:
  
- - `get_users.py`
- - `key_words.txt`
- - `get_counts.sh`
- - `get_user_names.py`
- - `get_user_names.sh`
+ - `users/get_users.py`
+ - `users/key_words.txt`
+ - `users/get_counts.sh`
+ - `users/get_user_names.py`
+ - `users/get_user_names.sh`
 
 #### 5. run the following command to generate complete user info files based on selected key words:
 
