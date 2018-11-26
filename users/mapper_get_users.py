@@ -9,10 +9,10 @@ from datetime import datetime
 import sys
 sys.path.append(".")
 
-twitter = Twitter(auth=OAuth("360126609-F9H7aa2IiGHQ2apG2g8HlLylLreRexg0qMz2soFk",
-                             "qg3UMwK7wqge3pQY2JX6Z2va4FENUuzxFQTLexN0qMjz2",
-                             "UmGVluYqkX1N4zDqFKXcYpKQN",
-                             "sUJxSX8i2eUh6NsOSjYx4ZMW3vDyXkLaqdAN0gyNlhVZgKzlvO"))
+twitter = Twitter(auth=OAuth("xxx",
+                             "xxx",
+                             "xxx",
+                             "xxx"))
 
 keys_to_keep = ['id', 'id_str', 'name', 'screen_name', 'location', 'description',
                 'followers_count', 'friends_count', 'listed_count', 'created_at', 'favourites_count',
