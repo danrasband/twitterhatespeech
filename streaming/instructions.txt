@@ -1,0 +1,60 @@
+# VM Information
+
+spark1: 108.168.232.230
+
+# version 1 (I suspended this program at around 9pm ET 11/29):
+root@108.168.232.230:~/final-project
+## main output files:
+~/final-project/collected
+## test output files:
+~/final-project/tmp
+
+# version 2 (I launched this program at around 9:45pm ET 11/29):
+root@108.168.232.230:~/final-project-v2
+## main output files:
+~/final-project-v2/collected
+## test output files:
+~/final-project-v2/tmp
+
+
+# move files between local and VM
+scp twitter_collect.scala root@108.168.232.230:~/final-project
+scp twitter_collect_v2.scala root@108.168.232.230:~/final-project-v2
+scp inputs/user_names_unique.txt root@108.168.232.230:~/final-project/inputs
+scp inputs/vocabulary2.txt root@108.168.232.230:~/final-project/inputs
+scp root@108.168.232.230:~/final-project/build.sbt .
+
+# remove special characters
+./prep_inputs.py < inputs/vocabulary.txt > inputs/vocabulary2.txt
+
+# run this to test
+sbt package
+$SPARK_HOME/bin/spark-submit \
+--class "TwitterSelectedTags" \
+--packages org.apache.bahir:spark-streaming-twitter_2.11:2.1.1 \
+--master spark://spark1:7077 $(find target -iname "*.jar") \
+1 \
+/root/final-project-v2/inputs/user_test.txt \
+/root/final-project-v2/inputs/vocab_test.txt \
+/root/final-project-v2/tmp/tweets2 \
+$TWITTER_CONSUMER_KEY \
+$TWITTER_CONSUMER_SECRET \
+$TWITTER_ACCESS_TOKEN \
+$TWITTER_ACCESS_SECRET \
+1
+
+# full run
+$SPARK_HOME/bin/spark-submit \
+--class "TwitterSelectedTags" \
+--packages org.apache.bahir:spark-streaming-twitter_2.11:2.1.1 \
+--master spark://spark1:7077 $(find target -iname "*.jar") \
+60 \
+/root/final-project-v2/inputs/user_names_unique.txt \
+/root/final-project-v2/inputs/vocabulary2.txt \
+/root/final-project-v2/collected \
+$TWITTER_CONSUMER_KEY \
+$TWITTER_CONSUMER_SECRET \
+$TWITTER_ACCESS_TOKEN \
+$TWITTER_ACCESS_SECRET \
+1
+
