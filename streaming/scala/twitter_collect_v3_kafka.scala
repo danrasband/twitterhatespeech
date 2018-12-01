@@ -89,6 +89,7 @@ object TwitterSelectedTags {
       val kafkaProducer = new KafkaProducer[String, String](kafkaProps)
       val record = new ProducerRecord[String, String](topic, tweetData.toString())
       kafkaProducer.send(record)
+      kafkaProducer.close()
     }
 
     tweetStream.foreachRDD((rdd, time) => {
