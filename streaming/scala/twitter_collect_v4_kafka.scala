@@ -11,20 +11,26 @@ import org.apache.spark.streaming.twitter._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.util.IntParam
 
+import org.apache.kafka.clients.producer._
+
 import java.io.File
+import java.util.Date
+import java.util.Properties
+
 import scala.io.Source
 
 object TwitterSelectedTags {
+  type TweetData = Tuple11[Long, String, Date, String, Boolean, Boolean, Int, Int, Boolean, Tuple2[String, String], Long]
 
   def main(args: Array[String]) {
-
     // this controls a lot of spark related logging
     // comment or change logging level as needed
-    Logger.getLogger("org").setLevel(Level.OFF);
-    Logger.getLogger("akka").setLevel(Level.OFF);
+    if (!Logger.getRootLogger.getAllAppenders.hasMoreElements) {
+      Logger.getRootLogger.setLevel(Level.WARN)
+    }
 
     // Process program arguments and set properties
-    if (args.length != 8) {
+    if (args.length != 6) {
       System.err.println("USER INPUT ERROR")
       System.exit(1)
     }
@@ -32,10 +38,10 @@ object TwitterSelectedTags {
     val intervalSeconds = args(0).toInt
     val vocab = Source.fromFile(args(1)).getLines.toSet
 
-    System.setProperty("twitter4j.oauth.consumerKey", args(3))
-    System.setProperty("twitter4j.oauth.consumerSecret", args(4))
-    System.setProperty("twitter4j.oauth.accessToken", args(5))
-    System.setProperty("twitter4j.oauth.accessTokenSecret", args(6))
+    System.setProperty("twitter4j.oauth.consumerKey", args(2))
+    System.setProperty("twitter4j.oauth.consumerSecret", args(3))
+    System.setProperty("twitter4j.oauth.accessToken", args(4))
+    System.setProperty("twitter4j.oauth.accessTokenSecret", args(5))
 
     var numTweetsCollected1 = 0L
     var numTweetsCollected2 = 0L
@@ -47,32 +53,29 @@ object TwitterSelectedTags {
 
     val tweetStream = TwitterUtils.createStream(ssc, None)
 
-    val partitionsEachInterval = sc.broadcast(args(7).toInt)
-
     val vocab_bc = sc.broadcast(vocab)
 
     def returnStatus (status: twitter4j.Status) : twitter4j.Status = {
-      if (status.isRetweet){
-          return status.getRetweetedStatus
-        } else {
-          return status
-        }
+      if (status.isRetweet) {
+        return status.getRetweetedStatus
       }
 
+      return status
+    }
+
     def returnPlace (status: twitter4j.Status) : (String, String) = {
-      if (status.getPlace!=null){
-          return (status.getPlace.getCountry, status.getPlace.getFullName.replaceAll(","," "))
-        } else {
-          return ("","")
-        }
+      if (status.getPlace!=null) {
+        return (status.getPlace.getCountry, status.getPlace.getFullName.replaceAll(","," "))
       }
+      return ("","")
+    }
 
     def checkVocab (status: String) : Long = {
       val words : Array[String] = status.split(" ")
       var count_words = 0L
-      for( word <- words ){
+      for (word <- words){
         val clean_word : String = word.replaceAll("[^a-zA-Z0-9] ","").toLowerCase()
-        if (vocab_bc.value.contains(clean_word)){
+        if (vocab_bc.value.contains(clean_word)) {
           count_words += 1
         }
       }
@@ -127,19 +130,14 @@ object TwitterSelectedTags {
                                            returnPlace(status),
                                            checkVocab(status.getText)))
 
-        tweetRDD.foreach(tweet => sendToKafka("tweets-vocab", tweet))
+        tweetRDD.foreach(tweet => sendToKafka("tweets-vocab-v2", tweet))
         retweetRDD.foreach(tweet => sendToKafka("retweets-vocab", tweet))
 
-        val count1 = sc.broadcast(tweetRDD.count())
-        val count2 = sc.broadcast(retweetRDD.count())
-
-        numTweetsCollected1 += count1
-        numTweetsCollected2 += count2
+        val count1 = tweetRDD.count()
+        val count2 = retweetRDD.count()
 
         println("Number of vocab matching tweets: %s".format(count1))
         println("Number of vocab matching retweets: %s".format(count2))
-        println("Total number of vocab tweets collected: %s".format(numTweetsCollected1))
-        println("Total number of vocab retweets collected: %s".format(numTweetsCollected2))
       }
     })
 
