@@ -1,0 +1,8 @@
+---
+version: '3'
+
+services:
+  tweet-processor:
+    build: .
+    env_file:
+      - .env
