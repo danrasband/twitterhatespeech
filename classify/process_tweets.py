@@ -177,10 +177,23 @@ class TweetProcessor(object):
     def _parse_tweet_tuple(self, tuple_str):
         '''Turn a stringified tuple into a dict.'''
         match = TUPLE_REGEX.match(tuple_str)
+        boolean_columns = [
+            'is_truncated',
+            'is_retweet',
+            'is_possibly_sensitive',
+        ]
         if match is not None:
-            return match.groupdict()
+            tweet = match.groupdict()
+            for column in boolean_columns:
+                tweet[column] = self._convert_bool(tweet[column])
+            return tweet
         else:
             raise Error('Can\'t parse: {}'.format(tuple_str))
+
+    def _convert_bool(self, value):
+        if value == '1':
+            return True
+        return False
 
     @orm.db_session
     def _insert_tweets(self, tweets_df):
