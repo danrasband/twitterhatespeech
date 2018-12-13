@@ -1,0 +1,40 @@
+# This file should be added at /etc/systemd/system/tweet_streaming.service
+# Twitter credentials in "Environment" section below must be set.
+
+[Unit]
+Description=Tweet Streaming Service
+After=network.target
+
+[Service]
+Type=simple
+
+# Run as root
+User=root
+
+# The path to run at
+WorkingDirectory=/root/streaming/scala
+
+# Set credentials for twitter
+Environment=INTERVAL_SECONDS=2
+Environment=TWITTER_CONSUMER_KEY=[SET CREDENTIAL HERE]
+Environment=TWITTER_CONSUMER_SECRET=[SET CREDENTIAL HERE]
+Environment=TWITTER_ACCESS_TOKEN=[SET CREDENTIAL HERE]
+Environment=TWITTER_ACCESS_TOKEN_SECRET=[SET CREDENTIAL HERE]
+
+ExecStart=/usr/local/spark/bin/spark-submit \
+          --packages org.apache.bahir:spark-streaming-twitter_2.11:2.1.1,org.apache.kafka:kafka-clients:2.1.0 \
+          --master spark://spark1:7077 \
+          target/scala-2.11/final-project_2.11-1.0.jar \
+          $INTERVAL_SECONDS \
+          /root/streaming/inputs/vocabulary3.txt \
+          $TWITTER_CONSUMER_KEY \
+          $TWITTER_CONSUMER_SECRET \
+          $TWITTER_ACCESS_TOKEN \
+          $TWITTER_ACCESS_TOKEN_SECRET
+
+ExecStop=pkill spark-submit
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
