@@ -23,11 +23,11 @@ from pony import orm
 # Globals
 
 ## Kafka Config
-TOPICS = ['tweets-v4']
+TOPICS = getenv('KAFKA_TOPIC').split(',')
 TWEETS_INTERVAL = 100
 SLEEP_INTERVAL = 10
-BOOTSTRAP_SERVERS = 'kafka.rasbonics.com:29092'
-KAFKA_GROUP = 'python-consumer'
+BOOTSTRAP_SERVERS = getenv('KAFKA_BOOTSTRAP_SERVERS')
+KAFKA_GROUP = getenv('KAFKA_GROUP')
 
 ## Postgres Config
 DB = orm.Database()
