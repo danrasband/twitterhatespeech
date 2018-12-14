@@ -3,10 +3,9 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import pandas as pd
-import numpy as np
 import plotly.graph_objs as go
 import random
+from datetime import datetime as dt
 import helpers
 from plotly import tools
 
@@ -24,134 +23,148 @@ colors = {
 
 # loading the data
 
-tweet_df, tweet_dict = helpers.LoadData('Data/tweets.json')
-retweet_df, retweet_dict = helpers.LoadData('Data/retweets.json')
+hate_tweets_df = helpers.hate_tweets_df
 
 # Chart #1: Time series
-by_hour = pd.DataFrame(tweet_df['hate_count'].groupby([tweet_df['created'].dt.date.rename('day'), tweet_df['created'].dt.hour.rename('hour')]).sum())
-by_hour.reset_index(inplace=True)
-by_hour['day-hour'] = by_hour['day'].map(str) + " : " + by_hour['hour'].map(str)
+by_hour_df = helpers.by_hour_df
 
+trace1_ch1 = go.Scatter(
+    x=by_hour_df['day-hour'],
+    y=by_hour_df['hate_score'],)
+
+layout_ch1 = {
+    'title': 'Hourly Activity',
+    'titlefont': {'size': 36},
+    'xaxis': {'showgrid': False},
+    'yaxis': {'showgrid': True,
+              'title': 'Total Hate Score',
+              'titlefont': {'size': 16}},
+    'legend': {'x': 0, 'y': 1}
+}
+
+fig_ch1 = {'data': [trace1_ch1],
+           'layout': layout_ch1}
 
 # Chart #2: Most common hashtags
 # source: https://community.plot.ly/t/wordcloud-in-dash/11407/4
-re_hash = {}
-for tweet in retweet_dict:
-    words = retweet_dict[tweet]['text'].split(" ")
-    for word in words:
-        if word and word[0] == "#":
-            if word not in re_hash:
-                re_hash[word] = [retweet_dict[tweet]['retweet_count']]
-            else:
-                re_hash[word][0] += retweet_dict[tweet]['retweet_count']
 
-re_hash_df = pd.DataFrame.from_dict(re_hash, orient='index')
-re_hash_df.rename(columns={0: 'count'}, inplace=True)
+# input the number of top hashtags to output
+top_hash_df = helpers.top_hash_df
 
-n_hashtags = 20
-pop_hashtags = re_hash_df.sort_values(by=["count"], ascending=False).index[:n_hashtags]
+n_hashtags = 10
+top_hash = top_hash_df.sort_values(by=["count"], ascending=False).index[:n_hashtags]
 
-counts = np.array(re_hash_df.sort_values(by=["count"], ascending=False)['count'][:n_hashtags])
-weights = 10 * counts / counts[np.argmin(counts)]
+# font size for the top hashtags
+weights = [random.randint(15, 35) for i in range(n_hashtags)]
+
+# color paletter for the top hashtags
 color_count = int(n_hashtags / 10)
-colors_wc = color_count * ['#17202A', '#1B2631', '#273746', '#4D5656', '#424949', '#566573', '#707B7C', '#808B96', '#839192', '#95A5A6']
+colors_wc = color_count * ['#17202A',
+                           '#1B2631',
+                           '#273746',
+                           '#4D5656',
+                           '#424949',
+                           '#566573',
+                           '#707B7C',
+                           '#808B96',
+                           '#839192',
+                           '#95A5A6']
+
+trace1_ch2 = go.Scatter(
+    x=random.choices(range(n_hashtags), k=n_hashtags),
+    y=random.choices(range(n_hashtags), k=n_hashtags),
+    mode='text',
+    text=top_hash,
+    marker={'opacity': 0.3},
+    textfont={'size': weights,
+              'color': colors_wc}
+)
+
+layout_ch2 = {
+    'title': 'Most Common Hashtags',
+    'titlefont': {'size': 36},
+    'xaxis': {'showgrid': False,
+              'showticklabels': False,
+              'zeroline': False,
+              'range': [-2, n_hashtags + 2]},
+    'yaxis': {'showgrid': False,
+              'showticklabels': False,
+              'zeroline': False,
+              'range': [-1, n_hashtags + 1]},
+    # 'paper_bgcolor':'#7f7f7f',
+    # plot_bgcolor: '#444',
+}
+
+fig_ch2 = {'data': [trace1_ch2],
+           'layout': layout_ch2}
 
 # Chart #3: Haters
 
-n_haters = 10
+top_haters_df = helpers.top_haters_df
 
-users_hs = {}
-for tweet in retweet_dict:
-    if retweet_dict[tweet]['username'] not in users_hs:
-        users_hs[retweet_dict[tweet]['username']] = 1
-    else:
-        users_hs[retweet_dict[tweet]['username']] += 1
-
-top_haters = sorted(users_hs.items(), key=lambda x: -x[1])[:n_haters]
-
-hater_dict = {}
-for hater in top_haters:
-    try:
-        hater_dict[hater[0]] = helpers.getUserData(hater[0])
-        hater_dict[hater[0]]['hate_score'] = hater[1]
-    except:
-        hater_dict[hater[0]] = {"name": "SUSPENDED", 'hate_score': hater[1]}
-
-hater_df = pd.DataFrame.from_dict(hater_dict, orient="index")
-suspended = hater_df['screen_name'].loc[hater_df["name"] == "SUSPENDED"]
-hater_df = hater_df.loc[hater_df['name'] != "SUSPENDED"]
 
 # source: https://plot.ly/python/horizontal-bar-charts/
-trace0 = go.Bar(
-    x=hater_df['followers_count'],
-    y=hater_df['screen_name'],
+trace1_ch3 = go.Bar(
+    x=top_haters_df['followers_count'],
+    y=top_haters_df['screen_name'],
     marker={
-        'color': 'rgba(50, 171, 96, 0.6)',
-        'line': {'color': 'rgba(50, 171, 96, 1.0)',
-                 'width': 1},
+        'color': 'rgb(117,107,177)'
     },
     name='Followers Count',
     orientation='h',
 )
 
-trace1 = go.Scatter(
-    x=hater_df['hate_score'],
-    y=hater_df['screen_name'],
+trace2_ch3 = go.Scatter(
+    x=top_haters_df['hate_score'],
+    y=top_haters_df['screen_name'],
     mode='lines+markers',
-    line={'color': 'rgb(128, 0, 128)'},
+    line={'color': 'rgb(117,107,177)'},
     name='Hate Score',
 )
 
-layout = dict(
-    title='Top 10 Users Promoting Hate Speech',
-    yaxis=dict(
-        showgrid=False,
-        showline=False,
-        showticklabels=True,
-        domain=[0, 0.85],
-    ),
-    yaxis2=dict(
-        showgrid=False,
-        showline=True,
-        showticklabels=False,
-        linecolor='rgba(102, 102, 102, 0.8)',
-        linewidth=2,
-        domain=[0, 0.85],
-    ),
-    xaxis=dict(
-        zeroline=False,
-        showline=False,
-        showticklabels=True,
-        showgrid=True,
-        domain=[0, 0.42],
-    ),
-    xaxis2=dict(
-        zeroline=False,
-        showline=False,
-        showticklabels=True,
-        showgrid=True,
-        domain=[0.47, 1],
-        side='top',
-    ),
-    legend=dict(
-        x=0.029,
-        y=1.038,
-        font=dict(
-            size=10,
-        ),
-    ),
-    margin=dict(
-        l=100,
-        r=20,
-        t=70,
-        b=70,
-    ),
-    # paper_bgcolor='rgb(248, 248, 255)',
-    # plot_bgcolor='rgb(248, 248, 255)',
-)
+layout_ch3 = {
+    'title': 'Top 10 Users Promoting Hate Speech',
+    'titlefont': {'size': 36},
+    'yaxis': {
+        'showgrid': False,
+        'showline': False,
+        'showticklabels': True,
+        'domain': [0, 0.85],
+    },
+    'yaxis2': {
+        'showgrid': False,
+        'showline': True,
+        'showticklabels': False,
+        'linecolor': 'rgba(102, 102, 102, 0.8)',
+        'linewidth': 2,
+        'domain': [0, 0.85],
+    },
+    'xaxis': {
+        'zeroline': False,
+        'showline': False,
+        'showticklabels': True,
+        'showgrid': True,
+        'domain': [0, 0.42],
+    },
+    'xaxis2': {
+        'zeroline': False,
+        'showline': False,
+        'showticklabels': True,
+        'showgrid': True,
+        'domain': [0.47, 1],
+        'side': 'top',
+    },
+    'legend': {
+        'x': 0.029,
+        'y': 1.038,
+        'font': {'size': 16}
+    },
+    'margin': {
+        'l': 100, 'r': 20, 't': 70, 'b': 70,
+    }}
 
 
-fig = tools.make_subplots(
+fig_ch3 = tools.make_subplots(
     rows=1,
     cols=2,
     specs=[[{}, {}]],
@@ -159,68 +172,89 @@ fig = tools.make_subplots(
     shared_yaxes=False,
     vertical_spacing=0.001)
 
-fig.append_trace(trace0, 1, 1)
-fig.append_trace(trace1, 1, 2)
-fig['layout'].update(layout)
+fig_ch3.append_trace(trace1_ch3, 1, 1)
+fig_ch3.append_trace(trace2_ch3, 1, 2)
+fig_ch3['layout'].update(layout_ch3)
 
 # Chart #4: Map
 # source: https://plot.ly/python/choropleth-maps/
 
-places_dict = {}
-for tweet in retweet_dict:
-    if retweet_dict[tweet]['place'] not in places_dict:
-        places_dict[retweet_dict[tweet]['place']] = 1
-    else:
-        places_dict[retweet_dict[tweet]['place']] += 1
+full_map_df = helpers.full_map_df
 
-states = helpers.states
-states_dict = {state: [0] for state in states}
-for place in places_dict:
-    place_list = place.split()
-    if len(place_list) == 2:
-        if place_list[1] in states_dict:
-            states_dict[place_list[1]][0] += 1
-        elif place_list[1] == 'USA':
-            if place_list[0] in states.values():
-                for abbr, full in states.items():
-                    if full == place_list[0]:
-                        states_dict[abbr][0] += 1
+states_df = full_map_df[full_map_df['level'] == 'USA']
+world_df = full_map_df[full_map_df['level'] == 'World']
 
-hate_map = pd.DataFrame.from_dict(states_dict, orient="index")
-hate_map.reset_index(inplace=True)
-hate_map.rename(columns={'index': 'state', 0: 'hate_count'}, inplace=True)
+scl = [[0.0, 'rgb(242,240,247)'],
+       [0.2, 'rgb(218,218,235)'],
+       [0.4, 'rgb(188,189,220)'],
+       [0.6, 'rgb(158,154,200)'],
+       [0.8, 'rgb(117,107,177)'],
+       [1.0, 'rgb(84,39,143)']]
 
 
-scl = [[0.0, 'rgb(242,240,247)'], [0.2, 'rgb(218,218,235)'], [0.4, 'rgb(188,189,220)'],
-       [0.6, 'rgb(158,154,200)'], [0.8, 'rgb(117,107,177)'], [1.0, 'rgb(84,39,143)']]
-
-chart3_data = [dict(
-    type='choropleth',
-    colorscale=scl,
-    autocolorscale=False,
-    locations=hate_map['state'],
-    z=hate_map['hate_count'],
-    locationmode='USA-states',
+trace1_ch4 = {
+    'type': 'choropleth',
+    'colorscale': scl,
+    'autocolorscale': False,
+    'locations': states_df['code'],
+    'z': states_df['avg_score'],
+    'locationmode': 'USA-states',
     # text=df['text'],
-    marker=dict(
-        line=dict(
-            color='rgb(255,255,255)',
-            width=2
-        )),
-    colorbar=dict(
-        title="Hate Meter")
-)]
+    'marker': {
+            'line': {
+                'color': 'rgb(255,255,255)',
+                'width': 2
+            }},
+    'colorbar': {'title': "Hate Meter",
+                 'titlefont': {'size': 16}}
+}
 
-chart3_layout = dict(
-    title='USA Hate Speech',
-    geo=dict(
-        scope='usa',
-        projection=dict(type='albers usa'),
-        showlakes=True,
-        lakecolor='rgb(255, 255, 255)'),
-)
+trace2_ch4 = {
+    'type': 'choropleth',
+    'colorscale': scl,
+    'autocolorscale': False,
+    'locations': world_df['code'],
+    'z': world_df['avg_score'],
+    # text=df['text'],
+    'marker': {
+            'line': {
+                'color': 'rgb(255,255,255)',
+                'width': 0.5
+            }},
+    'colorbar': {'title': "Hate Meter",
+                 'titlefont': {'size': 16}}
+}
 
-chart3_fig = dict(data=chart3_data, layout=chart3_layout)
+layout1_ch4 = {
+    'title': 'Hate Speech Hot Spots',
+    'titlefont': {'size': 36},
+    'geo': {
+        'scope': 'usa',
+        'projection': {'type': 'albers usa'},
+        'showframe': False,
+        'showlakes': True,
+        'showcoastlines': False,
+        'lakecolor': 'rgb(255, 255, 255)'
+    }
+}
+
+layout2_ch4 = {
+    'title': 'Hate Speech Hot Spots',
+    'titlefont': {'size': 36},
+    'geo': {
+        'projection': {'type': 'Mercator'},
+        'showframe': False,
+        'showlakes': True,
+        'showcoastlines': False,
+        'lakecolor': 'rgb(255, 255, 255)'
+    }
+}
+
+fig_ch4 = {'data': [trace2_ch4],
+           'layout': layout2_ch4}
+
+today_string = dt.today().strftime('%B %d, %Y')
+ttl_count = helpers.hate_tweets_df.shape[0]
 
 # Application
 
@@ -240,59 +274,56 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
             'color': colors['text']
         }
     ),
+    html.Div(
+        className='row',
+        children=[
+            html.Div(
+                className='ten columns',
+                children=[
+                    html.H3(
+                        children='Updated: ' + today_string,
+                        style={
+                            'textAlign': 'left',
+                            'color': colors['text']
+                        }
+                    ),
+                    html.H3(
+                        children='Total number of tweets with high likelihood of hate speech collected: ' + str(ttl_count),
+                        style={
+                            'textAlign': 'left',
+                            'color': colors['text']
+                        }
+                    ),
+
+                ]
+            )
+        ]
+    ),
+    html.Div(
+        [
+            dcc.Graph(
+                id='tweets-by-hour',
+                figure=fig_ch1
+            ),
+            dcc.Graph(
+                id='hashtags2',
+                figure=fig_ch2
+            )], style={'width': '49%',
+                       'padding': 10,
+                       'display': 'inline-block'}),
 
     html.Div(
         [
             dcc.Graph(
-                id='tweets-by-hour1',
-                figure={
-                    'data': [
-                        go.Scatter(
-                            x=by_hour['day-hour'],
-                            y=by_hour['hate_count'],
-                        )
-                    ],
-                    'layout': go.Layout(
-                        title='Hourly Activity',
-                        xaxis={'showgrid': False, 'title': 'Day : Hour'},
-                        yaxis={'showgrid': False, 'title': 'Number of Tweets with Hate Speech'},
-                        # margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
-                        legend={'x': 0, 'y': 1}
-                    )
-                }
-            ),
-            dcc.Graph(
-                id='hashtags',
-                figure={
-                    'data': [
-                        go.Scatter(
-                            x=random.choices(range(n_hashtags), k=n_hashtags),
-                            y=random.choices(range(n_hashtags), k=n_hashtags),
-                            mode='text',
-                            text=pop_hashtags,
-                            marker={'opacity': 0.3},
-                            textfont={'size': weights,
-                                      'color': colors_wc}
-                        )
-                    ],
-                    'layout': go.Layout(
-                        title='Most Common Hashtags',
-                        xaxis={'showgrid': False, 'showticklabels': False, 'zeroline': False, 'range': [-1, n_hashtags + 1]},
-                        yaxis={'showgrid': False, 'showticklabels': False, 'zeroline': False, 'range': [-1, n_hashtags + 1]},
-                        # margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
-                    )
-                }
-            )], style={'width': '49%', 'display': 'inline-block'}),
-    html.Div(
-        [
-            dcc.Graph(
                 id='haters',
-                figure=fig
+                figure=fig_ch3
             ),
             dcc.Graph(
                 id='hate-map',
-                figure=chart3_fig
-            )], style={'width': '49%', 'display': 'inline-block'})
+                figure=fig_ch4
+            )], style={'width': '49%',
+                       'padding': 10,
+                       'display': 'inline-block'})
 ])
 
 if __name__ == '__main__':
