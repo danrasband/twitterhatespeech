@@ -13,6 +13,7 @@ from plotly import tools
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
 # https://htmlcolorcodes.com/
 # loading the data
@@ -97,7 +98,6 @@ fig_ch2 = {'data': [trace1_ch2],
 # Chart #3: Haters
 
 top_haters_df = helpers.top_haters_df
-
 
 # source: https://plot.ly/python/horizontal-bar-charts/
 trace1_ch3 = go.Bar(

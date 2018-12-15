@@ -4,12 +4,14 @@ import json
 from twitter import *
 import config
 
+TWEETS_QUERY = "SELECT * FROM tweets WHERE language='en';"
+
 
 # Load the data
-with open('../Data/hate-tweets.json') as json_data:
-    hate_tweets = json.load(json_data)
+from sqlalchemy import create_engine
+db_conn = create_engine(config.POSTGRES_URL)
 
-hate_tweets_df = pd.DataFrame.from_dict(hate_tweets)
+hate_tweets_df = pd.read_sql_query(TWEETS_QUERY, con=db_conn)
 hate_tweets_df['retweet_count'] = pd.to_numeric(hate_tweets_df['retweet_count'])
 hate_tweets_df['timestamp'] = pd.to_datetime(hate_tweets_df['timestamp'])
 
@@ -64,10 +66,10 @@ top_haters_df.reset_index(inplace=True)
 
 # connecting to twitter
 
-twitter = Twitter(auth=OAuth(config.access_key,
-                             config.access_secret,
-                             config.consumer_key,
-                             config.consumer_secret))
+twitter = Twitter(auth=OAuth(config.ACCESS_KEY,
+                             config.ACCESS_SECRET,
+                             config.CONSUMER_KEY,
+                             config.CONSUMER_SECRET))
 
 keys_to_keep = ['id',
                 'name',
