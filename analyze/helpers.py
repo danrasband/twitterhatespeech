@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
-import json
-from twitter import *
 import config
+import json
+import pandas as pd
+from datetime import datetime
+from twitter import *
+
+CURRENT_TIME = datetime.now().timestamp()
+ONE_DAY_AGO_MS = int((CURRENT_TIME - (60 * 60 * 24)) * 1000)
+TWEETS_QUERY = "SELECT * FROM tweets WHERE language='en' AND kafka_timestamp >= {};".format(ONE_DAY_AGO_MS)
+print(TWEETS_QUERY)
 
 
 # Load the data
-with open('../Data/hate-tweets.json') as json_data:
-    hate_tweets = json.load(json_data)
+from sqlalchemy import create_engine
+db_conn = create_engine(config.POSTGRES_URL)
 
-hate_tweets_df = pd.DataFrame.from_dict(hate_tweets)
+hate_tweets_df = pd.read_sql_query(TWEETS_QUERY, con=db_conn)
 hate_tweets_df['retweet_count'] = pd.to_numeric(hate_tweets_df['retweet_count'])
-hate_tweets_df['timestamp'] = pd.to_datetime(hate_tweets_df['timestamp'])
+hate_tweets_df['timestamp'] = pd.to_datetime(hate_tweets_df['kafka_timestamp'], unit='ms')
 
 # create hate score (1 is added as original tweets have 0 retweets)
 hate_tweets_df['hate_score'] = (1 + hate_tweets_df['retweet_count']) * hate_tweets_df['probability_hate']
@@ -64,10 +70,10 @@ top_haters_df.reset_index(inplace=True)
 
 # connecting to twitter
 
-twitter = Twitter(auth=OAuth(config.access_key,
-                             config.access_secret,
-                             config.consumer_key,
-                             config.consumer_secret))
+twitter = Twitter(auth=OAuth(config.ACCESS_KEY,
+                             config.ACCESS_SECRET,
+                             config.CONSUMER_KEY,
+                             config.CONSUMER_SECRET))
 
 keys_to_keep = ['id',
                 'name',
