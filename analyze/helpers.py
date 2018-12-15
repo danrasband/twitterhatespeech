@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
-import json
-from twitter import *
 import config
+import json
+import pandas as pd
+from datetime import datetime
+from twitter import *
 
-TWEETS_QUERY = "SELECT * FROM tweets WHERE language='en';"
+CURRENT_TIME = datetime.now().timestamp()
+ONE_DAY_AGO_MS = int((CURRENT_TIME - (60 * 60 * 24)) * 1000)
+TWEETS_QUERY = "SELECT * FROM tweets WHERE language='en' AND kafka_timestamp >= {};".format(ONE_DAY_AGO_MS)
+print(TWEETS_QUERY)
 
 
 # Load the data
@@ -13,7 +17,7 @@ db_conn = create_engine(config.POSTGRES_URL)
 
 hate_tweets_df = pd.read_sql_query(TWEETS_QUERY, con=db_conn)
 hate_tweets_df['retweet_count'] = pd.to_numeric(hate_tweets_df['retweet_count'])
-hate_tweets_df['timestamp'] = pd.to_datetime(hate_tweets_df['timestamp'])
+hate_tweets_df['timestamp'] = pd.to_datetime(hate_tweets_df['kafka_timestamp'], unit='ms')
 
 # create hate score (1 is added as original tweets have 0 retweets)
 hate_tweets_df['hate_score'] = (1 + hate_tweets_df['retweet_count']) * hate_tweets_df['probability_hate']
