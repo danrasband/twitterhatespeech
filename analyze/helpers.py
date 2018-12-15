@@ -6,7 +6,7 @@ import config
 
 
 # Load the data
-with open('./Data/hate-tweets.json') as json_data:
+with open('../Data/hate-tweets.json') as json_data:
     hate_tweets = json.load(json_data)
 
 hate_tweets_df = pd.DataFrame.from_dict(hate_tweets)
@@ -55,9 +55,11 @@ top_hash_df.rename(columns={0: 'count'}, inplace=True)
 n_haters = 10
 
 # selecting top users by their hate_score
-haters_df = pd.DataFrame(hate_tweets_df['hate_score'].groupby(hate_tweets_df['screen_name']).sum())
+haters_df = pd.DataFrame(hate_tweets_df['probability_hate']
+                         .groupby(hate_tweets_df['screen_name'])
+                         .mean())
 
-top_haters_df = haters_df.sort_values(by='hate_score', ascending=False)[:n_haters]
+top_haters_df = haters_df.sort_values(by='probability_hate', ascending=False)[:n_haters + 5]
 top_haters_df.reset_index(inplace=True)
 
 # connecting to twitter
@@ -97,14 +99,17 @@ top_hater_dict = {}
 for hater in top_haters_df['screen_name']:
     try:
         top_hater_dict[hater] = getUserData(hater)
-        top_hater_dict[hater]['hate_score'] = top_haters_df['hate_score'].loc[top_haters_df['screen_name'] == hater].values[0]
+        top_hater_dict[hater]['probability_hate'] = top_haters_df['probability_hate'].loc[top_haters_df['screen_name'] == hater].values[0]
     except:
-        top_hater_dict[hater] = {"name": "SUSPENDED", 'hate_score': hater}
+        top_hater_dict[hater] = {"name": "SUSPENDED", 'probability_hate': hater}
 
 
 top_haters_df = pd.DataFrame.from_dict(top_hater_dict, orient="index")
+top_haters_df = top_haters_df.loc[top_haters_df['name'] != "SUSPENDED"]
+top_haters_df = top_haters_df.sort_values(by='probability_hate', ascending=False)[:n_haters]
+top_haters_df = top_haters_df.sort_values(by='probability_hate', ascending=True)
+
 # suspended = hater_df['screen_name'].loc[hater_df["name"] == "SUSPENDED"]
-# hater_df = hater_df.loc[hater_df['name'] != "SUSPENDED"]
 
 # Chart #4: Map
 # source: https://plot.ly/python/choropleth-maps/
@@ -447,7 +452,7 @@ for record in usa_dict:
                         states_dict[abbr]['hate_score'] += usa_dict[record]['probability_hate']
                         states_dict[abbr]['count'] += 1
         else:
-            print(record)
+            print(f"Invalid location: {usa_dict[record]}")
 
 for state in states_dict:
     if states_dict[state]['count'] > 0:

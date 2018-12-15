@@ -15,12 +15,6 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # https://htmlcolorcodes.com/
-colors = {
-    'background': '#212F3D',
-    'text': '#F8F9F9'
-}
-
-
 # loading the data
 
 hate_tweets_df = helpers.hate_tweets_df
@@ -30,7 +24,9 @@ by_hour_df = helpers.by_hour_df
 
 trace1_ch1 = go.Scatter(
     x=by_hour_df['day-hour'],
-    y=by_hour_df['hate_score'],)
+    y=by_hour_df['hate_score'],
+    line={'color': '#144F6F'}
+)
 
 layout_ch1 = {
     'title': 'Hourly Activity',
@@ -71,8 +67,8 @@ colors_wc = color_count * ['#17202A',
                            '#95A5A6']
 
 trace1_ch2 = go.Scatter(
-    x=random.choices(range(n_hashtags), k=n_hashtags),
-    y=random.choices(range(n_hashtags), k=n_hashtags),
+    x=random.choices(range(2 * n_hashtags), k=n_hashtags),
+    y=random.choices(range(3 * n_hashtags), k=n_hashtags),
     mode='text',
     text=top_hash,
     marker={'opacity': 0.3},
@@ -86,11 +82,11 @@ layout_ch2 = {
     'xaxis': {'showgrid': False,
               'showticklabels': False,
               'zeroline': False,
-              'range': [-2, n_hashtags + 2]},
+              'range': [-2, 2 * n_hashtags + 2]},
     'yaxis': {'showgrid': False,
               'showticklabels': False,
               'zeroline': False,
-              'range': [-1, n_hashtags + 1]},
+              'range': [-1, 3 * n_hashtags + 1]},
     # 'paper_bgcolor':'#7f7f7f',
     # plot_bgcolor: '#444',
 }
@@ -108,17 +104,17 @@ trace1_ch3 = go.Bar(
     x=top_haters_df['followers_count'],
     y=top_haters_df['screen_name'],
     marker={
-        'color': 'rgb(117,107,177)'
+        'color': '#144F6F'
     },
     name='Followers Count',
     orientation='h',
 )
 
 trace2_ch3 = go.Scatter(
-    x=top_haters_df['hate_score'],
+    x=top_haters_df['probability_hate'],
     y=top_haters_df['screen_name'],
     mode='lines+markers',
-    line={'color': 'rgb(117,107,177)'},
+    line={'color': '#144F6F'},
     name='Hate Score',
 )
 
@@ -179,125 +175,55 @@ fig_ch3['layout'].update(layout_ch3)
 # Chart #4: Map
 # source: https://plot.ly/python/choropleth-maps/
 
-full_map_df = helpers.full_map_df
+scl = [[0.0, '#BDD4DD'],
+       [0.1, '#A7C3CF'],
+       [0.2, '#88A7B4'],
+       [0.3, '#7498A7'],
+       [0.4, '#628695'],
+       [0.5, '#517685'],
+       [0.6, '#3F6676'],
+       [0.7, '#2F5767'],
+       [0.8, '#244B5B'],
+       [0.9, '#1A4252'],
+       [1.0, '#123847']]
 
-states_df = full_map_df[full_map_df['level'] == 'USA']
-world_df = full_map_df[full_map_df['level'] == 'World']
-
-scl = [[0.0, 'rgb(242,240,247)'],
-       [0.2, 'rgb(218,218,235)'],
-       [0.4, 'rgb(188,189,220)'],
-       [0.6, 'rgb(158,154,200)'],
-       [0.8, 'rgb(117,107,177)'],
-       [1.0, 'rgb(84,39,143)']]
-
-
-trace1_ch4 = {
-    'type': 'choropleth',
-    'colorscale': scl,
-    'autocolorscale': False,
-    'locations': states_df['code'],
-    'z': states_df['avg_score'],
-    'locationmode': 'USA-states',
-    # text=df['text'],
-    'marker': {
-            'line': {
-                'color': 'rgb(255,255,255)',
-                'width': 2
-            }},
-    'colorbar': {'title': "Hate Meter",
-                 'titlefont': {'size': 16}}
-}
-
-trace2_ch4 = {
-    'type': 'choropleth',
-    'colorscale': scl,
-    'autocolorscale': False,
-    'locations': world_df['code'],
-    'z': world_df['avg_score'],
-    # text=df['text'],
-    'marker': {
-            'line': {
-                'color': 'rgb(255,255,255)',
-                'width': 0.5
-            }},
-    'colorbar': {'title': "Hate Meter",
-                 'titlefont': {'size': 16}}
-}
-
-layout1_ch4 = {
-    'title': 'Hate Speech Hot Spots',
-    'titlefont': {'size': 36},
-    'geo': {
-        'scope': 'usa',
-        'projection': {'type': 'albers usa'},
-        'showframe': False,
-        'showlakes': True,
-        'showcoastlines': False,
-        'lakecolor': 'rgb(255, 255, 255)'
-    }
-}
-
-layout2_ch4 = {
-    'title': 'Hate Speech Hot Spots',
-    'titlefont': {'size': 36},
-    'geo': {
-        'projection': {'type': 'Mercator'},
-        'showframe': False,
-        'showlakes': True,
-        'showcoastlines': False,
-        'lakecolor': 'rgb(255, 255, 255)'
-    }
-}
-
-fig_ch4 = {'data': [trace2_ch4],
-           'layout': layout2_ch4}
-
-today_string = dt.today().strftime('%B %d, %Y')
+today_string = dt.today().strftime('%B %d, %Y %H:%M')
 ttl_count = helpers.hate_tweets_df.shape[0]
 
 # Application
 
-app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
-    html.H1(
-        children='Hate Speech on Twitter',
-        style={
-            'textAlign': 'center',
-            'color': colors['text']
-        }
-    ),
-
-    html.H2(
-        children='Real Time Analysis of Hate Activity on the Leading Social Platform',
-        style={
-            'textAlign': 'center',
-            'color': colors['text']
-        }
-    ),
+app.layout = html.Div(children=[
     html.Div(
-        className='row',
+        children=[
+            html.H1(
+                children='Hate Speech on Twitter'
+            ),
+            html.H2(
+                children='Real Time Analysis of Hate Activity on the Leading Social Platform'
+            )],
+        style={
+            'textAlign': 'center',
+            'backgroundColor': '#212F3D',
+            'color': '#F8F9F9'
+        }),
+    html.Div(
         children=[
             html.Div(
-                className='ten columns',
                 children=[
                     html.H3(
-                        children='Updated: ' + today_string,
-                        style={
-                            'textAlign': 'left',
-                            'color': colors['text']
-                        }
+                        children='Updated: ' + today_string
                     ),
                     html.H3(
-                        children='Total number of tweets with high likelihood of hate speech collected: ' + str(ttl_count),
-                        style={
-                            'textAlign': 'left',
-                            'color': colors['text']
-                        }
+                        children='Total number of tweets with high likelihood of hate speech collected: ' + str(ttl_count)
                     ),
-
+                    dcc.Markdown('#### Project information is on [GitHub](https://github.com/YuliaZamriy/W251-final-project)')
                 ]
             )
-        ]
+        ],
+        style={
+            'textAlign': 'left',
+            'color': '#212F3D'
+        }
     ),
     html.Div(
         [
@@ -311,20 +237,102 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
             )], style={'width': '49%',
                        'padding': 10,
                        'display': 'inline-block'}),
-
     html.Div(
         [
             dcc.Graph(
                 id='haters',
                 figure=fig_ch3
             ),
-            dcc.Graph(
-                id='hate-map',
-                figure=fig_ch4
-            )], style={'width': '49%',
-                       'padding': 10,
-                       'display': 'inline-block'})
+            dcc.Dropdown(
+                id='map-scope',
+                options=[
+                    {'label': 'United States', 'value': 'USA'},
+                    {'label': 'Global', 'value': 'World'}
+                ],
+                value='USA'
+            ),
+            dcc.Graph(id='hate-map')
+        ], style={'width': '49%',
+                  'padding': 10,
+                  'display': 'inline-block'})
 ])
+
+
+@app.callback(
+    dash.dependencies.Output('hate-map', 'figure'),
+    [dash.dependencies.Input('map-scope', 'value')])
+def update_map(value):
+
+    full_map_df = helpers.full_map_df
+    full_map_df = full_map_df[full_map_df['level'] == value]
+
+    if value == 'USA':
+
+        trace1_ch4 = {
+            'type': 'choropleth',
+            'colorscale': scl,
+            'autocolorscale': False,
+            'locations': full_map_df['code'],
+            'z': full_map_df['avg_score'],
+            'locationmode': 'USA-states',
+            'text': full_map_df['name'],
+            'marker': {
+                    'line': {
+                        'color': 'rgb(255,255,255)',
+                        'width': 2
+                    }},
+            'colorbar': {'title': "Hate Meter",
+                         'titlefont': {'size': 16}}
+        }
+
+        layout1_ch4 = {
+            'title': 'Hate Speech Geographical Hot Spots',
+            'titlefont': {'size': 36},
+            'geo': {
+                'scope': 'usa',
+                'projection': {'type': 'albers usa'},
+                'showframe': False,
+                'showlakes': True,
+                'showcoastlines': False,
+                'lakecolor': 'rgb(255, 255, 255)'
+            }
+        }
+
+    else:
+
+        trace1_ch4 = {
+            'type': 'choropleth',
+            'colorscale': scl,
+            'autocolorscale': False,
+            'locations': full_map_df['code'],
+            'z': full_map_df['avg_score'],
+            'text': full_map_df['name'],
+            'marker': {
+                    'line': {
+                        'color': 'rgb(255,255,255)',
+                        'width': 0.5
+                    }},
+            'colorbar': {'title': "Hate Meter",
+                         'titlefont': {'size': 16}}
+        }
+
+        layout1_ch4 = {
+            'title': 'Hate Speech Geographical Hot Spots',
+            'titlefont': {'size': 36},
+            'geo': {
+                'projection': {'type': 'Mercator'},
+                'showframe': False,
+                'showlakes': True,
+                'showcoastlines': False,
+                'lakecolor': 'rgb(255, 255, 255)'
+            }
+        }
+
+    return {
+        'data': [trace1_ch4],
+        'layout': layout1_ch4
+    }
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
