@@ -214,7 +214,7 @@ app.layout = html.Div(children=[
                         children='Updated: ' + today_string
                     ),
                     html.H3(
-                        children='Total number of tweets with high likelihood of hate speech collected: ' + str(ttl_count)
+                        children='Total number of tweets with high likelihood of hate speech collected: {:,}'.format(ttl_count)
                     ),
                     dcc.Markdown('#### Project information is on [GitHub](https://github.com/YuliaZamriy/W251-final-project)')
                 ]
