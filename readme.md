@@ -20,7 +20,7 @@ Many attempts have been made to use machine learning in classifying hate speech:
 
 Our main goal for this project is to provide the public with open and simple visualizations about the proliferation of hate speech on Twitter using (behind the scenes but open to everyone to explore) machine learning algorithms. Our dashboard answers questions such as:
 
-- How bad is the hate speech situation now on Twitter? Is it getting better or worse over time?
+- How bad is the hate speech situation now on Twitter?
 - What are the hashtags used by people promoting hate speech?
 - Who are the worst offenders and how visible they are in the network?
 - What are the hotspots of hate speech across the globe?
@@ -62,6 +62,35 @@ We launched data collection on Wednesday, 12 December, 2018 at 12:27am MST. As o
 
 ### Infrasturcture
 
+&nbsp;
+
 ### Dashboard
+
+The result of our work is presented in real time on [https://twitterhatespeech.org/](https://twitterhatespeech.org/). The dashboard was created using [Dash by plotly](https://plot.ly/products/dash/). It displays the data for the last 24 hours from around the world (for English-language tweets). 
+
+Two main metrics used are as following:
+
+- Hate Score: tweet's probability of hate speech 
+- Total Hate Score: tweet's probability of hate speech multiplied by the total number of retweets
+
+The Dashboard consists of five sections:
+
+- Section 1: The Header
+    + Update time (UTC)
+    + Number of English-language tweets classified as hate speech in the last 24 hours (based on the **TODO: what is the probability for the tweet to be calssified as hate speech?** cutoff point)
+- Section 2: Hourly Activity
+    + Aggregated total hate score by hour
+- Section 3: Most Common Hashtags
+    + 10 most common hashtags as determined by their frequency of occurence weighted by hate score
+- Section 4: Top 10 Users Promoting Hate speech
+    + Rated by the average hate score of their tweets
+    + Also included: their most recent followers count to indicate their infulence within the network
+- Section 5: Hate Speech geographical Hot Spots
+    + Average hate score by country (Global) or state (US only)
+    + The global map is sparsely populated mostly due to English language restriction, not because hate speech is not common there
+
+### Replication
+
+&nbsp;
 
 ### Future Work
