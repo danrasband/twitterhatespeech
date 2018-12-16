@@ -145,4 +145,5 @@ This project is only the first step in analyzing hate speech in real time. There
     - Add the option to extend the timeline beyond 24 hours
     - Introduce more languages
     - Ability to export the underlying data (currently it's possible only by clicking on `Edit in Chart Studio` button associated with each chart)
+    - Add a live feed of hate speech along with relevant news feeds
     - Many others
