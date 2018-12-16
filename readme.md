@@ -78,19 +78,71 @@ The Dashboard consists of five sections:
 - Section 1: The Header
     + Update time (UTC)
     + Number of English-language tweets classified as hate speech in the last 24 hours (based on the **TODO: what is the probability for the tweet to be calssified as hate speech?** cutoff point)
+
+<p align="center">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/header.png?raw=true" width="550" height="60" title="Dashboard header">
+</p>
+
+
 - Section 2: Hourly Activity
     + Aggregated total hate score by hour
+
+<p align="center">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/timeseries.png?raw=true" width="500" height="200" title="Time Series">
+</p>
+
 - Section 3: Most Common Hashtags
     + 10 most common hashtags as determined by their frequency of occurence weighted by hate score
+
+<p align="center">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/hashtags.png?raw=true" width="500" height="200" title="Hashtags">
+</p>
+
 - Section 4: Top 10 Users Promoting Hate speech
     + Rated by the average hate score of their tweets
     + Also included: their most recent followers count to indicate their infulence within the network
+
+<p align="center">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/top10users.png?raw=true" width="500" height="200" title="Top10Users">
+</p>
+
 - Section 5: Hate Speech geographical Hot Spots
     + Average hate score by country (Global) or state (US only)
     + The global map is sparsely populated mostly due to English language restriction, not because hate speech is not common there
 
+<p align="center">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/usa.png?raw=true" width="500" height="200" title="USA">
+</p>
+
+<p align="center">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/global.png?raw=true" width="500" height="200" title="Global">
+</p>
+
+
+&nbsp;
+
 ### Replication
+
+All the scripts necessary to replicate our work are provided in this repo:
+
+- [streaming](https://github.com/YuliaZamriy/W251-final-project/tree/master/streaming) folder contains all the scripts for collecting streaming data from Twitter, including how to set up `kafka` and run `scala` scripts. 
+- [classify](https://github.com/YuliaZamriy/W251-final-project/tree/master/classify) folder contains all the scripts for running the model including the data used in the original research
+- [analyze](https://github.com/YuliaZamriy/W251-final-project/tree/master/analyze) folder contains all the scripts necessary for populating and running the dashboard
+    + [data](https://github.com/YuliaZamriy/W251-final-project/tree/master/analyze/data) sub-folder contains a small portion of data collected from Twitter before classification
 
 &nbsp;
 
 ### Future Work
+
+This project is only the first step in analyzing hate speech in real time. There are many directions that we can take, but next steps can be broken down into two categories:
+
+1. *Framework: Improving hate speech classifier*
+    - As of this moment we have implemented only one of the existing models. There are quite a few others we could test and possibly build an ensemble solution. Another alternative would be to leverage [Perspective API](https://github.com/conversationai/perspectiveapi) that identifies `toxic` speech.
+    - One of the keys to building a robust classifier is quality labels. Hence, extending training dataset could help us improve the model. One of the most common crowd sourcing platforms is [Amazon Mechanical Turk](https://www.mturk.com/,) and we could use it to label new data. 
+    - Add granularity to classification of hate speech (misogynist, homophobic, racist, etc.).
+2. *Dashboard: Adding more context for the analysis*
+    - Combine hate speech locations with reports of crime
+    - Add the option to extend the timeline beyond 24 hours
+    - Introduce more languages
+    - Ability to export the underlying data (currently it's possible only by clicking on `Edit in Chart Studio` button associated with each chart)
+    - Many others
