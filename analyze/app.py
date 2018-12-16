@@ -30,7 +30,7 @@ trace1_ch1 = go.Scatter(
 )
 
 layout_ch1 = {
-    'title': 'Hourly Activity',
+    'title': 'Hourly Activity for the Last 24 Hours',
     'titlefont': {'size': 36},
     'xaxis': {'showgrid': False},
     'yaxis': {'showgrid': True,
@@ -187,7 +187,7 @@ scl = [[0.0, '#BDD4DD'],
        [0.9, '#1A4252'],
        [1.0, '#123847']]
 
-today_string = dt.today().strftime('%B %d, %Y %H:%M')
+today_string = dt.today().strftime('%B %d, %Y %H:%M UTC')
 ttl_count = helpers.hate_tweets_df.shape[0]
 
 # Application
@@ -196,11 +196,11 @@ app.layout = html.Div(children=[
     html.Div(
         children=[
             html.H1(
-                children='Hate Speech on Twitter'
+                children='Hate Speech on Twitter: The Last 24 Hours'
             ),
             html.H2(
                 children='Real Time Analysis of Hate Activity on the Leading Social Platform'
-            )],
+            ),],
         style={
             'textAlign': 'center',
             'backgroundColor': '#212F3D',
@@ -214,7 +214,7 @@ app.layout = html.Div(children=[
                         children='Updated: ' + today_string
                     ),
                     html.H3(
-                        children='Total number of tweets with high likelihood of hate speech collected: {:,}'.format(ttl_count)
+                        children='Total number of English language tweets with high likelihood of hate speech collected over the last 24 hours: {:,}'.format(ttl_count)
                     ),
                     dcc.Markdown('#### Project information is on [GitHub](https://github.com/YuliaZamriy/W251-final-project)')
                 ]
