@@ -80,7 +80,7 @@ The Dashboard consists of five sections:
     + Number of English-language tweets classified as hate speech in the last 24 hours (based on the **TODO: what is the probability for the tweet to be calssified as hate speech?** cutoff point)
 
 <p align="center">
-  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/header.png?raw=true" width="550" height="60" title="Dashboard header">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/header.png?raw=true" title="Dashboard header">
 </p>
 
 
@@ -88,14 +88,14 @@ The Dashboard consists of five sections:
     + Aggregated total hate score by hour
 
 <p align="center">
-  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/timeseries.png?raw=true" width="500" height="200" title="Time Series">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/timeseries.png?raw=true" title="Time Series">
 </p>
 
 - Section 3: Most Common Hashtags
     + 10 most common hashtags as determined by their frequency of occurence weighted by hate score
 
 <p align="center">
-  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/hashtags.png?raw=true" width="500" height="200" title="Hashtags">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/hashtags.png?raw=true" title="Hashtags">
 </p>
 
 - Section 4: Top 10 Users Promoting Hate speech
@@ -103,7 +103,7 @@ The Dashboard consists of five sections:
     + Also included: their most recent followers count to indicate their infulence within the network
 
 <p align="center">
-  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/top10users.png?raw=true" width="500" height="200" title="Top10Users">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/top10users.png?raw=true" title="Top10Users">
 </p>
 
 - Section 5: Hate Speech geographical Hot Spots
@@ -111,11 +111,11 @@ The Dashboard consists of five sections:
     + The global map is sparsely populated mostly due to English language restriction, not because hate speech is not common there
 
 <p align="center">
-  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/usa.png?raw=true" width="500" height="200" title="USA">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/usa.png?raw=true" title="USA">
 </p>
 
 <p align="center">
-  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/global.png?raw=true" width="500" height="200" title="Global">
+  <img src="https://github.com/YuliaZamriy/W251-final-project/blob/master/images/global.png?raw=true" title="Global">
 </p>
 
 
