@@ -84,7 +84,7 @@ These vectors were concatenated to produce 4023 features for each tweet. This pi
 
 <div align="center">
   <img
-    src="diagrams/FeatureVectorization.png"
+    src="diagrams/FeatureVectorization.png?raw=true"
     alt="Feature Vectorization Pipeline Diagram"
     title="Feature Vectorization Pipeline"
   >
@@ -124,7 +124,7 @@ In order to stream and process tweets continuously, we have set up an easily-sca
 
 <div align="center">
   <img
-    src="diagrams/InfrastructureDiagram.png"
+    src="diagrams/InfrastructureDiagram.png?raw=true"
     alt="Infrastructure Diagram"
     title="System Infrastructure"
   >
